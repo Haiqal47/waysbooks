@@ -117,3 +117,18 @@ func (h *handlerBooks) GetBooksById(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: dataBooks{Books: books}})
 }
+
+func (h *handlerBooks) GetBooksByUserId(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := int(userLogin.(jwt.MapClaims)["id"].(float64))
+	books, err := h.BooksRepository.GetBooksByUserId(userId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{
+		Code: http.StatusOK,
+		Data: books,
+		
+	})
+}

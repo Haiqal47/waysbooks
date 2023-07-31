@@ -26,11 +26,11 @@ function Books() {
     }
   };
   return (
-    <div>
-      <div className="d-flex justify-content-between gap-3">
-        {books?.map((e) => {
+    <div className="pb-5">
+      <div className="d-flex justify-content-center gap-3 row">
+        {books?.map((e, index) => {
           return (
-            <div>
+            <div className="col" key={index}>
               <Card
                 onClick={() => detailBook(e.id)}
                 style={{
@@ -44,7 +44,7 @@ function Books() {
                 <Card.Body>
                   <Card.Title
                     style={{ fontFamily: "Times" }}
-                    className="text-center fw-bold fs-3"
+                    className="text-center fw-bold fs-5"
                   >
                     {e.title}
                   </Card.Title>

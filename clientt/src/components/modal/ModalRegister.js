@@ -9,7 +9,7 @@ import { API } from "../../config/Api";
 function ModalRegister(props) {
   const switchModal = () => {
     props.onHide();
-    props.showLogin(true);
+    props.showlogin(true);
   };
 
   const navigate = useNavigate();
@@ -99,19 +99,17 @@ function ModalRegister(props) {
               />
             </div>
             <div className="px-3 pb-3">
-              <select>
+              <select
+                onChange={handleChange}
+                value={form.gender}
+                type="select"
+                name="gender"
+                style={{ width: "100%", border: "0", padding: "10px" }}
+              >
                 <option hidden>Gender</option>
                 <option>Laki - Laki</option>
                 <option>Perempuan</option>
               </select>
-              <input
-                onChange={handleChange}
-                value={form.gender}
-                type="text"
-                name="gender"
-                className="form-control"
-                placeholder="Gender"
-              />
             </div>
             <div className="px-3 pb-3">
               <input

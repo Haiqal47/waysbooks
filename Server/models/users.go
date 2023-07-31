@@ -21,3 +21,18 @@ type UserCartResponse struct {
 func (UserCartResponse) TableName() string {
 	return "users"
 }
+
+type UserProfileResponse struct {
+	ID       		int    `json:"id"`
+	FullName 		string `json:"name"`
+	Email    		string `json:"email"`
+	Gender   		string `json:"gender"`
+	Address 		string `json:"address"`
+	NoHandphone 	string `json:"noHandphone"`
+	BookID 			int `json:"book_id"`
+	BooksPurchased 	Books `json:"booksPurchased" gorm:"foreignKey:BookID"`
+}
+
+func (UserProfileResponse) TableName() string {
+	return "users"
+}

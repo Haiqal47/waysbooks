@@ -19,7 +19,6 @@ function DetailBooks() {
   const [showRegister, setShowRegister] = useState(false);
 
   const navigate = useNavigate();
-  const addToCart = () => navigate("/cart");
 
   let param = useParams();
   let id = parseInt(param.id);
@@ -52,16 +51,6 @@ function DetailBooks() {
       console.log(error);
     }
   });
-
-  // const addCart = async (id) => {
-  //   try {
-  //     const response = await API.get(`/book/${id}`);
-  //     navigate(`/cart`);
-  //     return response.data.data;
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
 
   return (
     <div>
@@ -103,7 +92,7 @@ function DetailBooks() {
           </Row>
           <div className="mt-5 pt-4 d-flex flex-column">
             <h1>About This Book</h1>
-            <p className="text-body-secondary mt-3">{books?.descripton}</p>
+            <p className="text-body-secondary mt-3">{books?.description}</p>
             <div className="ms-auto">
               <Button
                 onClick={() => {

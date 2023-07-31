@@ -8,22 +8,22 @@ import { useMutation } from "react-query";
 import { API, setAuthToken } from "../../config/Api";
 
 function ModalLogin(props) {
-  const [message, setMessage] = useState(null);
   const switchModal = () => {
     props.onHide();
-    props.showRegister(true);
-  };
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    props.showregister(true);
   };
 
   const [_, dispatch] = useContext(UserContext);
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const config = {
     headers: {
@@ -70,8 +70,8 @@ function ModalLogin(props) {
             </h1>
             <div className="px-3 pb-3">
               <input
-                onChange={handleChange}
                 value={form.email}
+                onChange={handleChange}
                 className="form-control"
                 type="email"
                 name="email"
@@ -81,8 +81,8 @@ function ModalLogin(props) {
             </div>
             <div className="px-3 pb-3">
               <input
-                onChange={handleChange}
                 value={form.password}
+                onChange={handleChange}
                 className="form-control"
                 name="password"
                 type="password"

@@ -15,6 +15,12 @@ function ShowCart() {
   const navigate = useNavigate();
   const [deleteId, setDeleteId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  // const [form, setForm] = useState({
+  //   id: "",
+  //   fullname: "",
+  //   email: "",
+  //   price: "",
+  // });
 
   const [open3, setOpen3] = useState(false);
 
@@ -35,14 +41,6 @@ function ShowCart() {
     }
   });
 
-  // const Total = "";
-
-  // const hitungTotal = useMutation(async(id) => {
-  //   for (let i = 0; i < id; i++){
-
-  //   }
-  // })
-
   const handleDeleteId = () => {
     setDeleteConfirm(true);
   };
@@ -55,35 +53,148 @@ function ShowCart() {
     }
   }, [deleteConfirm]);
 
-  // let param = useParams();
-  // let id = parseInt(param.id);
-
-  // console.log("ini id: ", id);
-
   let { data: myBooks, refetch } = useQuery("myBooksCache2", async () => {
     const response = await API.get(`/transactionuser`);
     console.log("ini coba response my books user : ", response);
-    console.log(response.data.data.transaction);
-    return response.data.data.transaction;
+    console.log("ini response data data:", response.data.data);
+    return response.data.data;
   });
 
-  const totalPrice = myBooks
-    ? myBooks.reduce(
+  let param = useParams();
+  let id = parseInt(param.id);
+
+  let { data: profile } = useQuery("/profileCache32", async () => {
+    const response = await API.get(`/transactionbyid/${id}`);
+    console.log("ini log response profile: ", response);
+    return response.data.data;
+  });
+
+  const totalPrice = myBooks?.transaction
+    ? myBooks?.transaction.reduce(
         (accumulator, currentValue) =>
-          accumulator + parseFloat(currentValue.booksPurchased.price),
+          accumulator + parseFloat(currentValue.booksPurchased?.price),
         0
       )
     : 0;
-  // const totalQty = myBooks
-  //   ? myBooks.reduce(
-  //       (accumulator, currentValue) =>
-  //         accumulator + parseFloat(currentValue.),
-  //       0
-  //     )
-  //   : 0;
+
+  const getID = myBooks?.transaction
+    ? myBooks?.transaction.reduce(
+        (accumulator, currentValue) =>
+          accumulator + parseFloat(currentValue.id),
+        0
+      )
+    : 0;
+
+  // targetName
+
+  // const getEmail = myBooks?.transaction ? myBooks?.transaction.reduce((accumulator, currentEmail) => {
+  //   if (currentEmail. === targetName) {
+  //     return currentPerson;
+  //   } else {
+  //     return accumulator;
+  //   }
+  // }, null);
+
+  // const fullName = strings.reduce((accumulator, currentString) => {
+  //   if (currentString.startsWith(targetLetter) && accumulator === null) {
+  //     return currentString;
+  //   } else {
+  //     return accumulator;
+  //   }
+  // }, null);
+
+  console.log("ini total price : ", totalPrice);
+  const totalQty = myBooks?.transaction
+    ? myBooks?.transaction.reduce(
+        (accumulator, currentValue) =>
+          accumulator + parseFloat(currentValue.qty),
+        0
+      )
+    : 0;
 
   let ID = myBooks;
-  console.log(ID);
+  console.log("ini my books :", ID);
+
+  // const form = {
+  //   id: myBooks?.id,
+  //   fullname: myBooks?.user,
+  //   email: myBooks?.user,
+  //   price: myBooks?.booksPurchased,
+  // };
+
+  console.log("ini total price", totalPrice);
+  console.log(myBooks?.transaction);
+
+  // const handleSetForm = () => {
+  //   setForm({
+  //     id: myBooks?.transaction.id,
+  //     fullname: myBooks?.transaction?.user?.name,
+  //     email: myBooks?.transaction?.user?.email,
+  //     price: totalPrice,
+  //   });
+  // };
+
+  let cobaid = myBooks?.transaction?.book_id;
+  console.log("ini coba id: ", cobaid);
+
+  const handleBuy = useMutation(async () => {
+    try {
+      const form = {
+        id: profile.id,
+        fullname: profile?.name,
+        email: profile?.email,
+        price: totalPrice,
+      };
+      console.log("ini form :", form);
+
+      const response = await API.post("/payment", form);
+      console.log("transaction success :", response);
+
+      const token = response.data.data.token;
+      window.snap.pay(token, {
+        onSuccess: function (result) {
+          /* You may add your own implementation here */
+          console.log(result);
+          navigate("/cart");
+        },
+        onPending: function (result) {
+          /* You may add your own implementation here */
+          console.log(result);
+          navigate("/cart");
+        },
+        onError: function (result) {
+          /* You may add your own implementation here */
+          console.log(result);
+          navigate("/cart");
+        },
+        onClose: function () {
+          /* You may add your own implementation here */
+          alert("you closed the popup without finishing the payment");
+        },
+      });
+    } catch (error) {
+      console.log("transaction failed : ", error);
+    }
+  });
+
+  useEffect(() => {
+    const midtransScriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
+    const myMidtransClientKey = process.env.REACT_APP_MIDTRANS_CLIENT_KEY;
+
+    let scriptTag = document.createElement("script");
+    scriptTag.src = midtransScriptUrl;
+    scriptTag.setAttribute("data-client-key", myMidtransClientKey);
+
+    document.body.appendChild(scriptTag);
+    return () => {
+      document.body.removeChild(scriptTag);
+    };
+  }, []);
+
+  // useEffect(() => {
+  //   handleSetForm();
+  //   console.log(form);
+  // }, []);
 
   return (
     <div>
@@ -93,25 +204,28 @@ function ShowCart() {
             <h1 style={{ fontFamily: "Times" }}>My Cart</h1>
             <h4>Review Your Order</h4>
             <div className="mt-4 pt-4 border-top border-bottom border-black">
-              {myBooks?.map((data) => {
+              {myBooks?.transaction?.map((data, index) => {
                 return (
-                  <div className="d-flex pb-4 justify-content-between">
+                  <div
+                    key={index}
+                    className="d-flex pb-4 justify-content-between"
+                  >
                     <div className="d-flex">
                       <img
                         style={{ width: "150px" }}
-                        src={data.booksPurchased.thumbnail}
+                        src={data.booksPurchased?.thumbnail}
                         alt="buku1"
                         className="me-3"
                       />
                       <div>
                         <h3 style={{ fontFamily: "Times" }}>
-                          {data.booksPurchased.title}
+                          {data.booksPurchased?.title}
                         </h3>
                         <p className="text-body-secondary fst-italic">
-                          {data.booksPurchased.author}
+                          {data.booksPurchased?.author}
                         </p>
                         <h5 className="text-success">
-                          {data.booksPurchased.price}
+                          {data.booksPurchased?.price}
                         </h5>
                       </div>
                     </div>
@@ -140,20 +254,24 @@ function ShowCart() {
               </div>
               <div className="d-flex justify-content-between">
                 <p>Qty</p>
-                <p>2</p>
+                <p>{totalQty}</p>
               </div>
             </div>
             <div>
               <div className="d-flex justify-content-between">
                 <p>Total</p>
-                <p className="text-success ">Rp. 150.000</p>
+                <p className="text-success ">Rp. {totalPrice}</p>
               </div>
             </div>
             <div className="d-flex justify-content-end mb-3">
               <img style={{ width: "50%" }} src={Pay} alt="pay" />
             </div>
             <div className="d-flex justify-content-end">
-              <Button style={{ width: "50%" }} variant="dark">
+              <Button
+                onClick={(e) => handleBuy.mutate(e)}
+                style={{ width: "50%" }}
+                variant="dark"
+              >
                 Pay
               </Button>
             </div>

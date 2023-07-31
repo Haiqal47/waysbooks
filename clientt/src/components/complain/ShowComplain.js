@@ -9,7 +9,7 @@ import Send from "../../assest/img/send.png";
 
 function ShowComplain() {
   return (
-    <div>
+    <div style={{ marginTop: "130px" }}>
       <Container className="my-5 rounded-5">
         <div>
           <div

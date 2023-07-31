@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 	dto "waysbooks/dto/result"
+	usersdto "waysbooks/dto/users"
 	authlogindto "waysbooks/dto/users/auth/authLogin"
 	authregisterdto "waysbooks/dto/users/auth/authRegister"
 	"waysbooks/models"
@@ -112,4 +113,34 @@ func (h *handlerAuth) CheckAuth(c echo.Context) error {
 	user, _ := h.AuthRepository.CheckAuth(int(userId))
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
+}
+
+func (h *handlerAuth) Profile(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(float64)
+
+	user, _ := h.AuthRepository.Profile(int(userId))
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: convertResponse(user)})
+}
+
+func convertResponse(u models.UserProfileResponse) usersdto.UserProfileResponse {
+	return usersdto.UserProfileResponse{
+	  ID:       u.ID,
+	  FullName: u.FullName,
+	  Email:    u.Email,
+	  Gender: u.Gender,
+	  Address: u.Address,
+	  NoHandphone: u.NoHandphone,
+	  BookID: u.BookID,
+	  BooksPurchased: u.BooksPurchased,
+	}
+  }
+
+  func (h *handlerAuth) FindUsers(c echo.Context) error {
+	users, err := h.AuthRepository.FindUsers()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: dataUser{User: users}})
 }

@@ -6,7 +6,7 @@ import Button from "react-bootstrap/Button";
 import ModalLogin from "./modal/ModalLogin";
 import ModalRegister from "./modal/ModalRegister";
 import Cart from "../assest/img/cart.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import Dropdown from "react-bootstrap/Dropdown";
 import DropdownItem from "react-bootstrap/esm/DropdownItem";
@@ -31,6 +31,9 @@ function Navbars() {
   const home = () => navigate("/");
   const addBooks = () => navigate("/addbook");
   const toCart = () => navigate("/cart");
+  const toComplain = () => navigate("/complainadmin");
+  const toProfile = () => navigate("/profile");
+  const toComplainUser = () => navigate("/complain");
 
   const [state, dispatch] = useContext(UserContext);
 
@@ -93,7 +96,7 @@ function Navbars() {
                       </DropdownItem>
                       <DropdownItem
                         className="d-flex align-items-center my-3"
-                        onClick={() => setOpen(false)}
+                        onClick={toComplain}
                       >
                         <img src={Complain} alt="tiket" className="me-3" />
                         <div className="fw-bold">Complain</div>
@@ -138,14 +141,14 @@ function Navbars() {
                     >
                       <DropdownItem
                         className="d-flex align-items-center"
-                        // onClick={addBooks}
+                        onClick={toProfile}
                       >
                         <img src={addBook} alt="tiket" className="me-3" />
                         <div className="fw-bold">Profile</div>
                       </DropdownItem>
                       <DropdownItem
                         className="d-flex align-items-center my-3"
-                        onClick={() => setOpen2(false)}
+                        onClick={toComplainUser}
                       >
                         <img src={Complain} alt="tiket" className="me-3" />
                         <div className="fw-bold">Complain</div>
@@ -184,13 +187,12 @@ function Navbars() {
       </Navbar>
       <ModalLogin
         show={showLogin}
-        showLogin={setShowLogin}
         onHide={() => setShowLogin(false)}
-        showRegister={setShowRegister}
+        showregister={setShowRegister}
       ></ModalLogin>
       <ModalRegister
         show={showRegister}
-        showLogin={setShowLogin}
+        showlogin={setShowLogin}
         onHide={() => setShowRegister(false)}
       />
     </div>

@@ -3,7 +3,9 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
+	"time"
 
 	dto "waysbooks/dto/result"
 
@@ -14,6 +16,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
+	"github.com/midtrans/midtrans-go"
+	"github.com/midtrans/midtrans-go/snap"
 )
 
 type handlerTransaction struct {
@@ -47,11 +51,22 @@ func (h *handlerTransaction) CreateTransaction(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
 
+	var transactionIsMatch = false
+	var transactionId int
+	for !transactionIsMatch {
+		transactionId = int(time.Now().Unix())
+		transactionData, _ := h.TransactionRepository.GetTransaction(transactionId)
+		if transactionData.ID == 0 {
+			transactionIsMatch = true
+		}
+	}
+
 	T := request.BooksPurchased.Price
 
-	fmt.Println(T)
+	// fmt.Println(T)
 
 	transaction := models.Transaction{
+		ID: transactionId,
 		UserID:       int(userId),
 		Attachment:   request.Attachment,
 		BookID:       BookID,
@@ -140,4 +155,75 @@ func (h *handlerTransaction) DeleteTransaction(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: data})
+}
+
+func (h *handlerTransaction) PaymentTransaction(c echo.Context) error {
+	request := new(transactiondto.TransactionMidtrans)
+
+	err := c.Bind(&request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	var s = snap.Client{}
+	s.New(os.Getenv("SERVER_KEY"), midtrans.Sandbox)
+
+	req := &snap.Request{
+		TransactionDetails: midtrans.TransactionDetails{
+			OrderID:  strconv.Itoa(request.BookID),
+			GrossAmt: int64(request.Price),
+		},
+		CreditCard: &snap.CreditCardDetails{
+			Secure: true,
+		},
+		CustomerDetail: &midtrans.CustomerDetails{
+			FName: request.FullName,
+			Email: request.Email,
+		},
+	}
+
+	snapResp, _ := s.CreateTransaction(req)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: snapResp})
+}
+
+func (h *handlerTransaction) Notification(c echo.Context) error {
+	var notificationPayload map[string]interface{}
+
+	if err := c.Bind(&notificationPayload); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	transactionStatus := notificationPayload["transaction_status"].(string)
+	fraudStatus := notificationPayload["fraud_status"].(string)
+	orderId := notificationPayload["order_id"].(string)
+
+	order_id, _ := strconv.Atoi(orderId)
+
+	// transaction, _ := h.TransactionRepository.GetTransaction(order_id)
+
+	fmt.Print("ini payloadnya", notificationPayload)
+
+	if transactionStatus == "capture" {
+		if fraudStatus == "challenge" {
+			h.TransactionRepository.UpdateTransaction("pending", order_id)
+		} else if fraudStatus == "accept" {
+			// SendMail("success", transaction)
+			h.TransactionRepository.UpdateTransaction("success", order_id)
+		}
+	} else if transactionStatus == "settlement" {
+		// SendMail("success", transaction)
+		h.TransactionRepository.UpdateTransaction("success", order_id)
+	} else if transactionStatus == "deny" {
+		h.TransactionRepository.UpdateTransaction("failed", order_id)
+	} else if transactionStatus == "cancel" || transactionStatus == "expire" {
+		h.TransactionRepository.UpdateTransaction("failed", order_id)
+	} else if transactionStatus == "pending" {
+		h.TransactionRepository.UpdateTransaction("pending", order_id)
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: notificationPayload})
 }

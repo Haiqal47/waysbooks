@@ -73,7 +73,10 @@ function ShowAddBook() {
 
   return (
     <div>
-      <Container className="px-5" style={{ marginTop: "130px" }}>
+      <Container
+        className="px-5"
+        style={{ marginTop: "130px", marginBottom: "50px" }}
+      >
         <div className="px-5">
           <h1 style={{ fontFamily: "Times" }}>Add Book</h1>
           <form onSubmit={(e) => handleSubmit.mutate(e)}>
@@ -113,9 +116,9 @@ function ShowAddBook() {
               name="author"
               value={form.author}
               onChange={handleChange}
-              className="w-100 p-2 rounded-3 border-0 ps-3 my-3"
+              className="w-100 p-2 rounded-3 border-0 ps-3 mb-3"
               style={{ backgroundColor: "#EEEEEE" }}
-              placeholder="author"
+              placeholder="Author"
             ></input>
             <input
               name="price"
@@ -139,7 +142,7 @@ function ShowAddBook() {
               name="bookAttachment"
               value={form.bookAttachment}
               onChange={handleChange}
-              className="w-100 p-2 rounded-3 border-0 ps-3"
+              className="w-100 p-2 rounded-3 border-0 ps-3 mb-3"
               style={{ backgroundColor: "#EEEEEE" }}
               placeholder="BookAttachment"
             ></input>
