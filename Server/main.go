@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"waysbooks/database"
 	"waysbooks/pkg/mysql"
@@ -50,7 +49,7 @@ func main() {
 	// 	  return c.JSON(http.StatusOK, data)
 	// })
 
-	var PORT = os.Getenv("PORT");
+	// var PORT = os.Getenv("PORT");
 
 	mysql.DatabaseInit()
 	database.RunMigration()
@@ -58,5 +57,5 @@ func main() {
 	routes.RouteInit(e.Group("/api/v1"))
 
 	fmt.Println("Server Running on Localhost : 5000 ")
-	e.Logger.Fatal(e.Start(":" + PORT))
+	e.Logger.Fatal(e.Start("localhost:5008"))
 }
